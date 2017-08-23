@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.qydata.mapper.ApiBanMapper">
+
+
+    <resultMap id="ApiBan_Map" type="org.qydata.po.ApiBan">
+        <result column="apiId" property="apiId"/>
+        <result column="totleId" property="totleId"/>
+        <result column="failId" property="failId"/>
+        <result column="resTime" property="resTime"/>
+        <result column="content" property="content"/>
+        <result column="companyName" property="companyName"/>
+        <result column="fc" property="fc"/>
+        <result column="ts" property="ts"/>
+        <result column="apiTypeId" property="apiTypeId"/>
+        <result column="apiTypeName" property="apiTypeName"/>
+        <result column="vendorId" property="vendorId"/>
+        <result column="vendorName" property="vendorName"/>
+        <result column="partnerId" property="partnerId"/>
+        <result column="partnerName" property="partnerName"/>
+    </resultMap>
+
+    <select id="queryAllApiBan" resultMap="ApiBan_Map">
+        SELECT a.apiId,a.fc,a.ts,
+        b.apiTypeId,b.vendorId,
+        c.name apiTypeName,
+        d.partnerId,d.name vendorName,
+        e.name partnerName
+        FROM qydata.ApiBan a
+        LEFT JOIN qydata.Api b ON a.apiId = b.id
+        LEFT JOIN qyfinance.bkvwApiType c ON b.apiTypeId = c.id
+        LEFT JOIN qyfinance.finance_ApiVendor d ON b.vendorId = d.id
+        LEFT JOIN qyfinance.bkvwPartner e ON d.partnerId = e.id
+        WHERE a.fc >= 5 AND b.status = 0
+    </select>
+
+    <select id="queryApiBan" parameterType="map" resultMap="ApiBan_Map">
+        SELECT b.apiId,b.id totleId,c.id failId,c.resTime,c.content,f.name companyName
+        FROM qydata.ApiRequestLog b
+        LEFT JOIN qydata.ApiResponseLog c ON b.id = c.requestLogId AND c.ok = 0
+        LEFT JOIN qydata.CustomerRequestLog d ON b.customerReqLogId = d.id
+        LEFT JOIN qydata.Customer e ON d.customerId = e.id
+        LEFT JOIN qydata.CustomerCompany f ON e.companyId = f.id
+        WHERE b.apiId = #{apiId} AND b.createTime >= #{time}
+    </select>
+    
+    <select id="queryApiMonitor" parameterType="map" resultType="int">
+        SELECT lastFc
+        FROM qyfinance.ApiMonitor
+        WHERE apiId = #{apiId}
+    </select>
+
+    <insert id="insertApiMonitor" parameterType="map">
+        INSERT INTO qyfinance.ApiMonitor(apiId,lastFc)
+        VALUES(#{apiId},#{lastFc})
+    </insert>
+
+    <update id="updateApiMonitor" parameterType="map">
+        UPDATE qyfinance.ApiMonitor SET lastFc = #{lastFc}
+        WHERE apiId = #{apiId}
+    </update>
+    
+    <select id="queryApiMonitorRecover" parameterType="map" resultType="int">
+        SELECT recoverFlag
+        FROM qyfinance.ApiMonitorRecover
+        WHERE apiId = #{apiId}
+    </select>
+
+    <insert id="insertApiMonitorRecover" parameterType="map">
+        INSERT INTO qyfinance.ApiMonitorRecover(apiId,recoverFlag,sendFlag)
+        VALUES(#{apiId},#{recoverFlag},#{sendFlag})
+    </insert>
+
+    <update id="updateApiMonitorRecover" parameterType="map">
+        UPDATE qyfinance.ApiMonitorRecover
+        SET recoverFlag = #{recoverFlag},sendFlag = #{sendFlag}
+        WHERE apiId = #{apiId}
+    </update>
+
+</mapper>
