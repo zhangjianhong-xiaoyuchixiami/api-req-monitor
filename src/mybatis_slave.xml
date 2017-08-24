@@ -7,7 +7,7 @@
             <transactionManager type="JDBC" /> <!-- 配置数据库连接信息 -->
             <dataSource type="POOLED">
                 <property name="driver" value="com.mysql.jdbc.Driver" />
-                <property name="url" value="jdbc:mysql://192.168.1.99:3306" />
+                <property name="url" value="jdbc:mysql://192.168.1.100:3306" />
                 <property name="username" value="qyfinance_2" />
                 <property name="password" value="KIoknX8$n5" />
             </dataSource>
